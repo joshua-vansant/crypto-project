@@ -7,7 +7,7 @@ import os
 
 logging.basicConfig(level=logging.INFO)
 
-DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://crypto_data_v4i1_user:eFI9rRftWJ6PRcviRPVQzkIXbSRHJmfL@dpg-cqtmjl3v2p9s73djqjsg-a.oregon-postgres.render.com/crypto_data_v4i1')
+DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://jmvs_project_storage_user:3CaSFRahhno5g1xINy0mGPrH7Mo2D61T@dpg-cqtqjpjv2p9s73ci779g-a.oregon-postgres.render.com/jmvs_project_storage')
 
 def normalize_data(df, method='min_max'):
     if method == 'min_max':
