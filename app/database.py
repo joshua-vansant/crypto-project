@@ -22,7 +22,8 @@ class TetherPriceData(Base):
     date = Column(DateTime)
     price = Column(Float)
 
-engine = create_engine('sqlite:///crypto_data.db')
+DATABASE_URL = 'postgresql://render_1_ssjk_user:wwuDljEgJ5HoCD0D5HrCfBf5YK6crvCp@dpg-cqtd6raj1k6c738j8g30-a.oregon-postgres.render.com/render_1_ssjk'
+engine = create_engine(DATABASE_URL)
 Base.metadata.create_all(engine)
 
 session_factory = sessionmaker(bind=engine)

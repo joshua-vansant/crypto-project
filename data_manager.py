@@ -28,7 +28,7 @@ def store_data(data, model_class):
         date = datetime.fromtimestamp(timestamp / 1000.0)
         record = model_class(date=date, price=price)
         session.add(record)
-        logging.info(f'Adding record: Date={date}, Price={price}')
+        # logging.info(f'Adding record: Date={date}, Price={price}')
     session.commit()
     logging.info(f'Committed {len(data["prices"])} records to the database.')
     session.close()  # Close the session when done
