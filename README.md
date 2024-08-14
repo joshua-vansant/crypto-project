@@ -2,6 +2,9 @@
 
 ## Description
 This project is a web application that provides real-time and historical data analysis for cryptocurrencies, including Bitcoin, Ethereum, and Tether. It uses Flask for the web interface, SQLAlchemy for database management, and Plotly for visualizing data.
+
+**Note:** This project is hosted on the free tier of Render, which may result in slower page load times. Thank you for your patience!
+
 ## Live Demo
 Check out the live demo of the application hosted on Render: [Cryptocurrency Project on Render](https://crypto-project-s986.onrender.com/)
 
