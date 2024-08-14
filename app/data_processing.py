@@ -4,6 +4,7 @@ import numpy as np
 import plotly.graph_objects as go
 import logging
 import os
+import requests
 
 logging.basicConfig(level=logging.INFO)
 
@@ -122,9 +123,79 @@ def generate_volatility_graph():
     trace_bitcoin = go.Scatter(x=df_bitcoin_vol.index, y=df_bitcoin_vol['volatility'], mode='lines', name='Bitcoin Volatility')
     trace_ethereum = go.Scatter(x=df_ethereum_vol.index, y=df_ethereum_vol['volatility'], mode='lines', name='Ethereum Volatility')
     trace_tether = go.Scatter(x=df_tether_vol.index, y=df_tether_vol['volatility'], mode='lines', name='Tether Volatility')
-    
-    # Create layout and figure
+
     layout = go.Layout(title='Rolling Volatility Comparison', xaxis=dict(title='Date'), yaxis=dict(title='Volatility'))
     fig = go.Figure(data=[trace_bitcoin, trace_ethereum, trace_tether], layout=layout)
     
     return fig.to_html(full_html=False)
+
+def get_sunburst_data():
+    base_url = 'https://api.coingecko.com/api/v3/coins/markets'
+    params = {
+        'vs_currency': 'usd',
+        'order': 'market_cap_desc',
+        'per_page': 10,
+        'page': 1,
+        'sparkline': False
+    }
+    
+    logging.info("Fetching market data from CoinGecko API...")
+    response = requests.get(base_url, params=params)
+    
+    if response.status_code == 200:
+        market_data = response.json()
+        # logging.info("Market data fetched successfully.")
+        
+        if not market_data:
+            logging.warning("No market data returned from API.")
+            return None
+        
+        # Create the top level category, which is the market capitalization of all cryptocurrencies
+        sunburst_data = {
+            'labels': ['Crypto Market'],
+            'parents': [''],
+            'values': [sum(coin['market_cap'] for coin in market_data)],
+            'hovertext': ['Total market capitalization of top 10 cryptocurrencies']
+        }
+        
+        categories = {
+            'Top 3': ['bitcoin', 'ethereum', 'tether'],
+            'Others': [coin['id'] for coin in market_data if coin['id'] not in ['bitcoin', 'ethereum', 'tether']]
+        }
+        
+        # Break the values into second level categories, top 3 and other
+        top_3_value = sum(coin['market_cap'] for coin in market_data if coin['id'] in categories['Top 3'])
+        others_value = sum(coin['market_cap'] for coin in market_data if coin['id'] not in categories['Top 3'])
+        
+        # Setup the sunburst labels and parents for second level categories
+        sunburst_data['labels'].append('Top 3')
+        sunburst_data['parents'].append('Crypto Market')
+        sunburst_data['values'].append(top_3_value)
+        sunburst_data['hovertext'].append('Combined market cap of Bitcoin, Ethereum, and Tether')
+        
+        sunburst_data['labels'].append('Others')
+        sunburst_data['parents'].append('Crypto Market')
+        sunburst_data['values'].append(others_value)
+        sunburst_data['hovertext'].append('Combined market cap of other cryptocurrencies')
+        
+        # Add bit, eth, and tether to Top 3 second level category
+        for coin_id in categories['Top 3']:
+            coin_data = next(coin for coin in market_data if coin['id'] == coin_id)
+            sunburst_data['labels'].append(coin_data['name'])
+            sunburst_data['parents'].append('Top 3')
+            sunburst_data['values'].append(coin_data['market_cap'])
+            sunburst_data['hovertext'].append(f"Market cap of {coin_data['name']}")
+        
+        # Add other coins to Others second level category
+        for coin_id in categories['Others']:
+            coin_data = next(coin for coin in market_data if coin['id'] == coin_id)
+            sunburst_data['labels'].append(coin_data['name'])
+            sunburst_data['parents'].append('Others')
+            sunburst_data['values'].append(coin_data['market_cap'])
+            sunburst_data['hovertext'].append(f"Market cap of {coin_data['name']}")
+        
+        logging.info("Sunburst data prepared successfully.")
+        return sunburst_data
+    else:
+        logging.error(f"Error fetching market data: {response.status_code}")
+        return None

@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, current_app
 from app.database import Session, BitcoinPriceData, EthereumPriceData, TetherPriceData
 import plotly.graph_objs as go
-import app.database as database
-from app.data_processing import get_resampled_data, generate_volatility_graph, get_line_graph_data
+from app.data_processing import get_resampled_data, generate_volatility_graph, get_line_graph_data, get_sunburst_data
 import pandas as pd
+
 
 main = Blueprint('main', __name__)
 
@@ -12,7 +12,7 @@ def index():
     session = Session()
     df_resampled = get_resampled_data()
 
-    # Ensure date is not an index and is a datetime
+    # Fix the dates
     df_resampled.reset_index(inplace=True)
     df_resampled['date'] = pd.to_datetime(df_resampled['date']).dt.strftime('%Y-%m-%d') 
 
@@ -27,7 +27,7 @@ def index():
 
     volatility_graph = generate_volatility_graph()
 
-    session.close()  # Close the session
+    session.close()
 
     return render_template('index.html', volatility_graph=volatility_graph, plot_data=plot_data)
 
@@ -46,7 +46,6 @@ def candlestick():
 
 @main.route('/line_graph')
 def line_graph():
-    # Get data using the function from data_processing.py
     bitcoin_dates, bitcoin_prices, ethereum_dates, ethereum_prices, tether_dates, tether_prices = get_line_graph_data()
 
     # Create Bitcoin price plot
@@ -67,3 +66,24 @@ def line_graph():
 def volatility():
     volatility_graph = generate_volatility_graph()
     return render_template('volatility.html', volatility_graph=volatility_graph)
+
+@main.route('/sunburst-chart')
+def sunburst_chart():
+    try:
+        sunburst_data = get_sunburst_data()
+        if sunburst_data:
+            fig = go.Figure(go.Sunburst(
+                labels=sunburst_data['labels'],
+                parents=sunburst_data['parents'],
+                values=sunburst_data['values'],
+                hovertext=sunburst_data.get('hovertext', [''] * len(sunburst_data['labels'])),
+                hoverinfo='label+value+text'
+            ))
+
+            chart_html = fig.to_html(full_html=False)
+            return render_template('sunburst_chart.html', chart_html=chart_html)
+        else:
+            return "No data available for the chart.", 404
+    except Exception as e:
+        current_app.logger.error(f"Error in sunburst_chart route: {e}")
+        return "An internal server error occurred.", 500
