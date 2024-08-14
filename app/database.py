@@ -34,6 +34,14 @@ class RecipeTable(Base):
     instructions = Column(Text, nullable=False)
     created_at = Column(TIMESTAMP, default=datetime.utcnow)
 
+class SunburstData(Base):
+    __tablename__ = 'sunburst_data'
+    id = Column(Integer, primary_key=True)
+    label = Column(String, nullable=False)
+    parent = Column(String, nullable=False)
+    value = Column(Float, nullable=False)
+    hovertext = Column(String, nullable=True)
+
 DATABASE_URL = os.getenv('DATABASE_URL')
 engine = create_engine(DATABASE_URL)
 Base.metadata.create_all(engine)
