@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from datetime import datetime
 import os
 
+# NOTE: This file should only be run when the database is being set up or rebuilt.
 
 Base = declarative_base()
 

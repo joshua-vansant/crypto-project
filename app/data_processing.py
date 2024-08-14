@@ -24,7 +24,6 @@ def normalize_data(df, method='min_max'):
 
 def get_combined_data():
     try:
-        # Create a SQLAlchemy engine
         engine = create_engine(DATABASE_URL)
 
         # Fetch data from Bitcoin table
@@ -44,13 +43,11 @@ def get_combined_data():
 
         # Combine data from all tables
         df_combined = pd.concat([df_bitcoin, df_ethereum, df_tether])
-
-        # Convert 'date' column to datetime format and set it as index
+        
+        #Fix dates
         df_combined['date'] = pd.to_datetime(df_combined['date'])
         df_combined.set_index('date', inplace=True)
 
-        # Normalize data
-        # df_combined = normalize_data(df_combined, method='scale')  # Uncomment this line if normalization is required
         return df_combined
     except Exception as e:
         logging.error(f"Error fetching combined data: {e}")
@@ -70,7 +67,6 @@ def get_resampled_data():
 
 def get_line_graph_data():
     try:
-        # Create a SQLAlchemy engine
         engine = create_engine(DATABASE_URL)
 
         # Fetch data from Bitcoin table
@@ -85,7 +81,7 @@ def get_line_graph_data():
         query_tether = "SELECT date AS date, price FROM tether_prices"
         df_tether = pd.read_sql(query_tether, engine)
 
-        # Convert 'date' column to datetime format
+        # Fix the dates
         df_bitcoin['date'] = pd.to_datetime(df_bitcoin['date'])
         df_ethereum['date'] = pd.to_datetime(df_ethereum['date'])
         df_tether['date'] = pd.to_datetime(df_tether['date'])
@@ -104,8 +100,7 @@ def get_line_graph_data():
         raise
 
 def calculate_rolling_volatility(df, window=30):
-    # Ensure no SettingWithCopyWarning by using .loc
-    df = df.copy()  # Make a copy to avoid modifying the original DataFrame
+    df = df.copy()
     df.loc[:, 'returns'] = df['price'].pct_change()
     df.loc[:, 'volatility'] = df['returns'].rolling(window=window).std() * np.sqrt(window)
     return df
@@ -113,7 +108,7 @@ def calculate_rolling_volatility(df, window=30):
 def generate_volatility_graph():
     df_combined = get_combined_data()
     
-    # Separate by cryptocurrency
+    # Put each currency in its own dataframe
     df_bitcoin = df_combined.loc[df_combined['crypto'] == 'bitcoin'].copy()
     df_ethereum = df_combined.loc[df_combined['crypto'] == 'ethereum'].copy()
     df_tether = df_combined.loc[df_combined['crypto'] == 'tether'].copy()
@@ -132,4 +127,4 @@ def generate_volatility_graph():
     layout = go.Layout(title='Rolling Volatility Comparison', xaxis=dict(title='Date'), yaxis=dict(title='Volatility'))
     fig = go.Figure(data=[trace_bitcoin, trace_ethereum, trace_tether], layout=layout)
     
-    return fig.to_html(full_html=False)  # Return HTML to be embedded in the template
+    return fig.to_html(full_html=False)

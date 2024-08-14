@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Candlestick Chart</title>
-    <!-- Load Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Load Plotly.js from CDN -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
@@ -34,14 +32,11 @@
     </nav>
     <h1>Candlestick Chart Comparison</h1>
 
-    <!-- Container for the Plotly chart -->
     <div id="candlestick-chart" style="width: 100%; height: 600px;"></div>
 
     <script>
-        // Ensure data is properly embedded
         var plotData = {{ plot_data | tojson | safe }};
 
-        // Create traces for each cryptocurrency
         var traceBitcoin = {
             x: plotData.x.filter((_, i) => plotData.crypto[i] === 'bitcoin'),
             open: plotData.open.filter((_, i) => plotData.crypto[i] === 'bitcoin'),
@@ -82,18 +77,16 @@
             title: 'Candlestick Chart Comparison',
             xaxis: {
                 title: 'Date',
-                rangeslider: {visible: false}  // Hide the date slider
+                rangeslider: {visible: false}
             },
             yaxis: {
                 title: 'Price (USD)'
             },
-            showlegend: false // Hide the legend
+            showlegend: false
             };
 
-        // Plot the chart
         Plotly.newPlot('candlestick-chart', data, layout);
     </script>
-    <!-- Load Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
